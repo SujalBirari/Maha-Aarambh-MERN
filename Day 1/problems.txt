@@ -1,0 +1,44 @@
+Phase 1: Advanced Asynchronous Patterns
+Scenario: You are building a "User Dashboard" aggregation service. When a user logs in, your server must fetch data from three independent microservices: UserProfile, RecentOrders, and Notifications.
+
+The Problem: The Notifications service is legacy code; it is slow and frequently times out.
+
+The Constraint: The dashboard must load within 500ms. If Notifications fails or takes too long, you must return the page without notifications rather than crashing or making the user wait 10 seconds.
+
+Task: Write a function getDashboardData(userId) that fetches all three in parallel. If Notifications takes longer than 300ms, ignore it and return the other two.
+
+Key Concepts: Promise.allSettled, Promise.race, Async/Await, Error boundaries.
+
+
+Phase 2: Memory Management & Streams
+Scenario: Your client is a data analytics firm. Users upload massive CSV files (2GB+) containing sales records to be inserted into a database.
+
+The Problem: Your server only has 512MB of RAM. Reading the whole file into memory using fs.readFile crashes the Node.js process with a "Heap Out of Memory" error.
+
+The Constraint: You must parse the CSV line-by-line, transform the data (e.g., capitalize names), and write it to a new file or database without spiking memory usage.
+
+Task: Create a script using native Node.js Streams to pipeline the read, transform, and write operations.
+
+Key Concepts: fs.createReadStream, Transform Streams, Backpressure, Pipeline API.
+
+Phase 3: Event Loop & Blocking Code
+Scenario: You are building an image processing API. Users send an image, and you apply a heavy "grayscale" filter using a synchronous mathematical loop.
+
+The Problem: While your server is processing one image (which takes 3 seconds of CPU time), all other incoming requests are frozen because the Event Loop is blocked. Other users can't even ping the health-check endpoint.
+
+The Constraint: You cannot offload this to a different microservice yet. You must keep the main thread free for incoming requests while processing the heavy calculation.
+
+Task: Offload the heavy calculation to a separate thread using Node.js Worker Threads or the child_process module.
+
+Key Concepts: Event Loop latency, Worker Threads, Clustering, Partitioning.
+
+Phase 4: Robust API Architecture & Error Handling
+Scenario: You are building a payment processing webhook. Third-party providers (like Stripe) hit your endpoint to confirm a payment.
+
+The Problem: Sometimes your database is down. Sometimes the data sent by the provider is malformed. If you throw an unhandled error, the Node.js process exits. If you don't send a response quickly, the provider retries the charge, potentially double-charging the user.
+
+The Constraint: You must implement a centralized error handling mechanism. All errors (validation, database, system) must be caught, logged properly (masked PII), and return a standardized JSON error response (e.g., HTTP 500 or 400) without crashing the server.
+
+Task: Create an Express.js middleware chain that handles custom AppError classes. Ensure you handle "uncaught exceptions" and "unhandled rejections" at the process level safely.
+
+Key Concepts: Middleware, Custom Error Classes, process.on('uncaughtException'), Graceful Shutdown.
